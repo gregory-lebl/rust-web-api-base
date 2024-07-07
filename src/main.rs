@@ -6,8 +6,8 @@ use std::net::SocketAddr;
 use axum::extract::{Path, Query};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, get_service};
-use axum::{middleware, Router};
-use serde::Deserialize;
+use axum::{middleware, Json, Router};
+use serde::{Deserialize, Serialize};
 use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 
@@ -22,7 +22,7 @@ async fn main() {
         .layer(middleware::map_response(main_response_mapper))
         .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
-    
+
     // Start the server
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
@@ -38,23 +38,27 @@ struct HelloParams {
     name: Option<String>,
 }
 
+#[derive(Serialize)]
+struct HelloResponse {
+    message: String,
+}
+
 fn routes_hello() -> Router {
     return Router::new()
     .route("/hello", get(handler_hello))
-    .route("/hello2/:name", get(handler_hello2));
 
 }
-async fn handler_hello(Query(params): Query<HelloParams>) -> Html<&'static str> {
+
+async fn handler_hello(Query(params): Query<HelloParams>) -> Json<HelloResponse> {
     println!("->> {:<12} - handler_hello - {params:?}", "HANDLER");
 
     let name = params.name.unwrap_or("World".to_string());
-    Html("<p>Hello, World!</p>")
-}
 
-async fn handler_hello2(Path(name): Path<String>) -> Html<&'static str> {
-    println!("->> {:<12} - handler_hello2 - {name:?}", "HANDLER");
+    let response = HelloResponse {
+        message: String::from("Hello World in JSON")
+    };
 
-    Html("<p>Hello, World2!</p>")
+    Json(response)
 }
 
 fn routes_static() -> Router {
