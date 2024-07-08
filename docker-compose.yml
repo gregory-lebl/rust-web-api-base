@@ -10,3 +10,25 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=password
+
+  database:
+    container_name: database
+    image: postgres:16
+    ports:
+      - 5432:5432
+    volumes:
+      - ./database:/var/lib/postgresql
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: rustapi
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+networks:
+  database:
+    driver: local

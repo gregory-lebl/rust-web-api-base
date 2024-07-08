@@ -8,6 +8,7 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, get_service};
 use axum::{middleware, Json, Router};
 use serde::{Deserialize, Serialize};
+use sqlx::Connection;
 use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 
@@ -16,6 +17,9 @@ mod web;
 
 #[tokio::main]
 async fn main() {
+    let url: &str = "postgres://postgre:root@database:5432/rustapi";
+    let mut conn: sqlx::PgConnection = sqlx::postgres::PgConnection::connect(url).await?;
+
     let routes_all = Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
